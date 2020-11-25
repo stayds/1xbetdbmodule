@@ -25,7 +25,7 @@
         $pdo = connect();
         $headers = array_keys($data[0]);
         $columns = implode(',',$headers);
-        $sql = $pdo->prepare("INSERT INTO $table ($columns) VALUES (?,?,?,?,?,?,?,?)");
+        $sql = $pdo->prepare("INSERT INTO $table ($columns) VALUES (?,?,?,?,?,?,?)");
         try {
             $pdo->beginTransaction();
             foreach ($data as $key =>$row)
