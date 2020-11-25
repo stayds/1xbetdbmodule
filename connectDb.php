@@ -31,8 +31,8 @@
             foreach ($data as $key =>$row)
             {
                 $insertdata = [
-                    $row['matchid'],$row['matchname'],$row['kind'],$row['league'],
-                    $row['hometeam'],$row['awayteam'],$row['datestring'],$row['matchdate']
+                    $row['matchid'],$row['sport'],$row['kind'],$row['league'],
+                    $row['hometeam'],$row['awayteam'],$row['datestring']
                 ];
 
                 $sql->execute($insertdata);
