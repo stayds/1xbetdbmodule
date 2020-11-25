@@ -53,13 +53,13 @@ class Dbmodule
 
                     $games[] = [
                         "matchid" => $record['I'],
-                        "matchname" => $record['O1'] . ' - ' . $record['O2'],
+                        "sport" => strtolower($record['SN']),
                         "kind" => $record['KI'],
                         "league" => $record['L'],
                         "hometeam" => $record['O1'],
                         "awayteam" => $record['O2'],
                         "datestring" => $record['S'],
-                        "matchdate" => date('Y-m-d', $record['S'])
+
                     ];
 
                 }else {
