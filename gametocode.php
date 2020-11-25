@@ -61,6 +61,7 @@
             foreach ($data as $games){
 
                 if ($games[0]['typemsg'] == true) {
+                    $fails = [];
                     $bet = $games[0]['type'];
                     $away = $games[0]['away'];
                     $home = $games[0]['home'];
@@ -70,34 +71,50 @@
                     $result = $connect->query($sql);
                     if ($result->rowCount() > 0){
                         foreach ($result as $list) {
-
                             $outcome = json_decode($list[$bet], true);
-
-                            $final_detail[] = [
-                                'GameId' => intval($list['matchid']),
-                                'Kind' => intval($list['kind']),
-                                'Param'=>($outcome[$games[0]['outcome']]['param'])? floatval($outcome[$games[0]['outcome']]['param']) : 0,
-                                'Coef' => floatval($outcome[$games[0]['outcome']]['odd']),
-                                'Type' => intval($outcome[$games[0]['outcome']]['type'])
-                            ];
-                            break;
+                            if(in_array($games[0]['outcome'], $outcome)){
+                                $final_detail[] = [
+                                    'GameId' => intval($list['matchid']),
+                                    'Kind' => intval($list['kind']),
+                                    'Param'=>($outcome[$games[0]['outcome']]['param'])? floatval($outcome[$games[0]['outcome']]['param']) : 0,
+                                    'Coef' => floatval($outcome[$games[0]['outcome']]['odd']),
+                                    'Type' => intval($outcome[$games[0]['outcome']]['type'])
+                                ];
+                                break;
+                            }
+                            else{
+                                $games[0]['message'] = 'match outcome not covered in database';
+                                $fails = [
+                                    $games[0]
+                                ];
+                            }
                         }
+                    }
+                    else{
+                        $games[0]['message'] = 'match not cover in database';
+                        $fails = [
+                            $games[0]
+                        ];
                     }
                 }
             }
 
-             return $final_detail;
+            return $final_detail;
 
         }catch (PDOException $e){
             echo $e->getMessage();
         }
     }
 
-    function generate_code($detail){
-       $games = json_encode($detail);
-       $url = "https://1xbet.ng/LiveUtil/SaveCoupon";
-       $handle = curl_init();
-        curl_setopt_array($handle,
+    function generate_code($detail)
+    {
+        if (empty($detail)) {
+            echo "No games to convert";
+        } else{
+            $games = json_encode($detail);
+            $url = "https://1xbet.ng/LiveUtil/SaveCoupon";
+            $handle = curl_init();
+            curl_setopt_array($handle,
             array(
                 CURLOPT_URL => $url,
                 CURLOPT_RETURNTRANSFER => true,
@@ -107,16 +124,16 @@
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => "POST",
                 CURLOPT_POSTFIELDS => '{
-                        "Live":false,
-                        "Events":'.$games.',
-                        "Summ":1,
-                        "Lng":"en",
-                        "Vid":0,
-                        "CfView":0,
-                        "notWait":true,
-                        "CheckCf":2,
-                        "partner":159   
-                        }',
+                            "Live":false,
+                            "Events":' . $games . ',
+                            "Summ":1,
+                            "Lng":"en",
+                            "Vid":0,
+                            "CfView":0,
+                            "notWait":true,
+                            "CheckCf":2,
+                            "partner":159   
+                            }',
                 CURLOPT_HTTPHEADER => array(
                     "Accept: application/json, text/plain, */*",
                     "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0",
@@ -126,7 +143,8 @@
                 ),
             )
         );
-        $data = curl_exec($handle);
-        $decode = json_decode($data, true);
-        print_r($decode);
+            $data = curl_exec($handle);
+            $decode = json_decode($data, true);
+            print_r($decode);
+        }
     }
