@@ -49,7 +49,7 @@ class Dbmodule
             $table = 'onexbet';
             //build an array of the data that needs to be inserted
             foreach ($decode['Value'] as $record) {
-                if (($record['O1'] != 'Home (Goals)' || $record['O2'] != 'Away (Goals)' ) && !empty($record['E'])) {
+                if (($record['O1'] != 'Home (Goals)' || $record['O2'] != 'Away (Goals)' ) && ($record['O1'] != 'Home (Special bets)' || $record['O2'] != 'Away (Special bets)' ) && !empty($record['E'])) {
 
                     $games[] = [
                         "matchid" => $record['I'],
