@@ -76,6 +76,7 @@
                             $final_detail[] = [
                                 'GameId' => intval($list['matchid']),
                                 'Kind' => intval($list['kind']),
+                                'Param'=>($outcome[$games[0]['outcome']]['param'])? floatval($outcome[$games[0]['outcome']]['param']) : 0,
                                 'Coef' => floatval($outcome[$games[0]['outcome']]['odd']),
                                 'Type' => intval($outcome[$games[0]['outcome']]['type'])
                             ];
@@ -84,7 +85,8 @@
                     }
                 }
             }
-            return $final_detail;
+
+             return $final_detail;
 
         }catch (PDOException $e){
             echo $e->getMessage();
