@@ -25,17 +25,22 @@
         $pdo = connect();
         $headers = array_keys($data[0]);
         $columns = implode(',',$headers);
-        $sql = $pdo->prepare("INSERT INTO $table ($columns) VALUES (?,?,?,?,?,?,?)");
+        $sql = $pdo->prepare("INSERT INTO $table ($columns) VALUES (?,?,?,?,?,?,?,?,?,?)");
         try {
             $pdo->beginTransaction();
             foreach ($data as $key =>$row)
             {
-                $insertdata = [
-                    $row['matchid'],$row['sport'],$row['kind'],$row['league'],
-                    $row['hometeam'],$row['awayteam'],$row['datestring']
-                ];
+                if($row['awayteam'] =="" || $row['hometeam'] ==""){
+                    continue;
+                }
+                else {
+                    $insertdata = [
+                        $row['matchid'],$row['matchi'], $row['sport'], $row['kind'], $row['league'],
+                        $row['hometeam'], $row['awayteam'], $row['datestring'],$row['corner_id'],$row['card_id']
+                    ];
 
-                $sql->execute($insertdata);
+                    $sql->execute($insertdata);
+                }
             }
             $pdo->commit();
         }catch (PDOException $e){

@@ -70,11 +70,13 @@
 
                     $result = $connect->query($sql);
                     if ($result->rowCount() > 0){
+
                         foreach ($result as $list) {
                             $outcome = json_decode($list[$bet], true);
-                            if(in_array($games[0]['outcome'], $outcome)){
+
+                             if($outcome[$games[0]['outcome']]){
                                 $final_detail[] = [
-                                    'GameId' => intval($list['matchid']),
+                                    'GameId' => gametocodeid($list['matchid']),
                                     'Kind' => intval($list['kind']),
                                     'Param'=>($outcome[$games[0]['outcome']]['param'])? floatval($outcome[$games[0]['outcome']]['param']) : 0,
                                     'Coef' => floatval($outcome[$games[0]['outcome']]['odd']),
@@ -96,6 +98,7 @@
                             $games[0]
                         ];
                     }
+
                 }
             }
 
@@ -106,11 +109,12 @@
         }
     }
 
-    function generate_code($detail)
-    {
+    function generate_code($detail){
+
         if (empty($detail)) {
             echo "No games to convert";
-        } else{
+        }
+        else{
             $games = json_encode($detail);
             $url = "https://1xbet.ng/LiveUtil/SaveCoupon";
             $handle = curl_init();
@@ -132,7 +136,7 @@
                             "CfView":0,
                             "notWait":true,
                             "CheckCf":2,
-                            "partner":159   
+                            "partner":159
                             }',
                 CURLOPT_HTTPHEADER => array(
                     "Accept: application/json, text/plain, */*",
@@ -147,4 +151,21 @@
             $decode = json_decode($data, true);
             print_r($decode);
         }
+    }
+
+    function gametocodeid($id){
+        $url ="https://1xbet.ng/LineFeed/GetGameZip?id=$id&lng=en&cfview=0&isSubGames=true&GroupEvents=true&allEventsGroupSubGames=true&countevents=1750&partner=159&marketType=1";
+        $games = [];
+        $handles = curl_init();
+        curl_setopt_array($handles,
+            array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => "GET",
+            )
+        );
+        $data = curl_exec($handles);
+        $decode = json_decode($data, true);
+        return $decode['Value']['I'];
+
     }

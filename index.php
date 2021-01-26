@@ -5,6 +5,5 @@
    include_once 'Dbmodule.php';
    $data = new Dbmodule();
 
-   $data->initLoad();
-   $data->getOutcomes();
-
+    $data->initLoad();
+    //$data->getOutcomes();
