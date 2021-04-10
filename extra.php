@@ -3,6 +3,7 @@
 function fetchdata($id,$handle,$gid){
 
     $url = "https://1xbet.ng/LineFeed/GetGameZip?id=$id&lng=en&cfview=0&isSubGames=true&GroupEvents=true&allEventsGroupSubGames=true&countevents=2500&partner=159&marketType=1";
+
     curl_setopt_array($handle,
         array(
             CURLOPT_URL => $url,
@@ -35,6 +36,7 @@ function fetchdatahalf($id,$handle,$gid){
     $datax = $decode['Value']['GE'];
 
     foreach ($datax as $list){
+
         if($list['G'] == $gid){
             return $list['E'];
         }
@@ -139,6 +141,27 @@ function fetchcard($id,$handle,$gid){
     }
 }
 
+function fetch_others($id,$handle,$gid){
+
+    $url = "https://1xbet.ng/LineFeed/GetGameZip?id=$id&lng=en&cfview=0&isSubGames=true&GroupEvents=true&allEventsGroupSubGames=true&countevents2500&partner=159&marketType=1";
+       curl_setopt_array($handle,
+        array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true
+        )
+    );
+    $data = curl_exec($handle);
+    $decode = json_decode($data, true);
+    $datax = $decode['Value']['GE'];
+
+    foreach ($datax as $list){
+
+        if($list['G'] == $gid){
+            return $list['E'];
+        }
+    }
+}
+
 
 function correctorder($data=null){
     $ch = explode('.',$data);
@@ -168,9 +191,10 @@ function correctorder($data=null){
     }
 }
 
-function getLeagues(){
+function getLeagues($sport){
     $leagues = [];
-    $url = "https://1xbet.ng/LineFeed/GetChampsZip?sport=1&lng=en&tf=2200000&tz=1&country=132&partner=159&virtualSports=true";
+    $sports = ['football'=>1,'basketball'=>3,'tennis'=>4];
+    $url = "https://1xbet.ng/LineFeed/GetChampsZip?sport=$sports[$sport]&lng=en&tf=2200000&tz=1&country=132&partner=159&virtualSports=true";
     $handles = curl_init();
     curl_setopt_array($handles,
         array(
@@ -212,19 +236,63 @@ function getGames($id,$league,$table){
     $decode = json_decode($data, true);
 
     foreach ($decode['Value']['G'] as $record) {
-        $games[] = [
-            "matchid" => $record['CI'],
-            "matchi" => $record['I'],
-            "sport" => strtolower($decode['Value']['SN']),
-            "kind" => $record['KI'],
-            "league" => $league,
-            "hometeam" => $record['O1'],
-            "awayteam" => $record['O2'],
-            "datestring" => $record['S'],
-            "corner_id" => ($record['SG'][2]['TG'] == "Corners") ? $record['SG'][2]['I'] : null,
-            "card_id" => ($record['SG'][9]['TG'] == "Cards") ? $record['SG'][9]['I'] : null
+        $sport = strtolower($decode['Value']['SN']);
+        if ($sport == "football") {
+            $games[] = [
+                "matchid" => $record['CI'],
+                "matchi" => $record['I'],
+                "sport" => $sport,
+                "kind" => $record['KI'],
+                "league" => $league,
+                "hometeam" => $record['O1'],
+                "awayteam" => $record['O2'],
+                "datestring" => $record['S'],
+                "corner_id" => ($record['SG'][2]['TG'] == "Corners") ? $record['SG'][2]['I'] : null,
+                "card_id" => ($record['SG'][9]['TG'] == "Cards") ? $record['SG'][9]['I'] : null
             ];
+        }
+        elseif($sport == "basketball"){
+
+            $games[] = [
+                "matchid" => $record['CI'],
+                "matchi" => $record['I'],
+                "sport" => $sport,
+                "kind" => $record['KI'],
+                "league" => $league,
+                "hometeam" => $record['O1'],
+                "awayteam" => $record['O2'],
+                "datestring" => $record['S'],
+                "fqid" => ($record['SG'][0]['CI']) ? $record['SG'][0]['I'] : null,
+                "sqid" => ($record['SG'][1]['CI']) ? $record['SG'][1]['I'] : null,
+                "tqid" => ($record['SG'][2]['CI']) ? $record['SG'][2]['I'] : null,
+                "ftqid" => ($record['SG'][3]['CI']) ? $record['SG'][3]['I'] : null,
+                "fhid" => ($record['SG'][4]['CI']) ? $record['SG'][4]['I'] : null,
+                "shid" => ($record['SG'][5]['CI']) ? $record['SG'][5]['I'] : null,
+            ];
+        }
+        elseif($sport == "tennis"){
+            $games[] = [
+                "matchid" => $record['CI'],
+                "matchi" => $record['I'],
+                "sport" => $sport,
+                "kind" => $record['KI'],
+                "league" => $league,
+                "hometeam" => $record['O1'],
+                "awayteam" => $record['O2'],
+                "datestring" => $record['S'],
+                "fsid" => ($record['SG'][0]['CI']) ? $record['SG'][0]['I'] : null,
+            ];
+        }
     }
 
-    insertToDb($table,$games);
+    if($sport == "football"){
+        insertToDb($table,$games);
+    }
+    elseif($sport == "basketball"){
+        insertToBB($table,$games);
+    }
+    elseif($sport == "tennis"){
+        insertToTennis($table,$games);
+    }
+
 }

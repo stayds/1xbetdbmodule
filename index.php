@@ -6,4 +6,4 @@
    $data = new Dbmodule();
 
     $data->initLoad();
-    //$data->getOutcomes();
+    $data->getOutcomes();
